@@ -11,39 +11,8 @@ import { createAppiumDriver } from './appium-driver';
 import { startAppiumServer, stopAppiumServer } from './appium-server';
 export * from "./appium-driver";
 
-// TODO: Update variables consider also this from utils. 
-const config = (() => {
-    const options = yargs
-        .option("runType", { describe: "Path to excute command.", type: "string", default: null })
-        .option("testFolder", { describe: "e2e test folder name", default: "e2e", type: "string" })
-        .option("capabilities", { describe: "Capabilities", type: "string" })
-        .option("sauceLab", { describe: "SauceLab", default: false, type: "boolean" })
-        .option("verbose", { alias: "v", describe: "Log actions", default: false, type: "boolean" })
-        .help()
-        .argv;
-
-    const config = {
-        executionPath: options.path,
-        loglevel: options.verbose,
-        testFolder: options.testFolder,
-        runType: options.runType || process.env.npm_config_runType,
-        capabilities: options.capabilities || path.join(process.cwd(), options.testFolder, "config", utils.capabilitiesName),
-        isSauceLab: options.sauceLab
-    }
-    return config;
-})();
-
-const {
-    executionPath,
-    loglevel,
-    capabilities,
-    testFolder,
-    runType,
-    isSauceLab
-} = config;
-
 // TODO: Remove server options class and use instead AppiumServer
-const serverOptoins = new ServerOptions(9200);
+const serverOptoins = new ServerOptions(9230);
 export function startServer(port) {
     return startAppiumServer(serverOptoins.port);
 };
@@ -52,15 +21,15 @@ export function stopServer() {
     return stopAppiumServer(serverOptoins.port);
 };
 
-const caps: any = resolveCapabilities(capabilities, runType);
+const caps: any = resolveCapabilities(utils.capabilities, utils.runType);
 export function createDriver() {
     if (!caps) {
         throw new Error("Provided path to appium capabilities is not correct!");
     }
-    if (!runType) {
+    if (!utils.runType) {
         throw new Error("--runType is missing! Make sure it is provided correctly! It is used to parse the configuration for appium driver!");
     }
-    return createAppiumDriver(runType, serverOptoins.port, caps, isSauceLab);
+    return createAppiumDriver(utils.runType, serverOptoins.port, caps, utils.isSauceLab);
 };
 
 export function elementHelper() {

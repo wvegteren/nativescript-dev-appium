@@ -1,14 +1,53 @@
+require('colors');
 import * as path from "path";
 import * as fs from "fs";
 import * as childProcess from "child_process";
-require('colors');
+import * as yargs from 'yargs';
+
+export const capabilitiesName = "appium.capabilities.json";
+
+// TODO: Update all variables initialization. Consider using both ways or only yargs.
+// Provide as much variables as needed. 
+const config = (() => {
+    const options = yargs
+        .option("runType", { describe: "Path to excute command.", type: "string", default: null })
+        .option("testFolder", { describe: "e2e test folder name", default: "e2e", type: "string" })
+        .option("capabilities", { describe: "Capabilities", type: "string" })
+        .option("sauceLab", { describe: "SauceLab", default: false, type: "boolean" })
+        .option("verbose", { alias: "v", describe: "Log actions", default: false, type: "boolean" })
+        //.option("port", { alias: "v", describe: "Log actions", default: false, type: "boolean" })
+        //.option("appPath/appLocation", { alias: "v", describe: "Log actions", default: false, type: "boolean" })
+        .help()
+        .argv;
+
+    const config = {
+        executionPath: options.path,
+        loglevel: options.verbose,
+        testFolder: options.testFolder,
+        runType: options.runType || process.env.npm_config_runType,
+        capabilities: options.capabilities || path.join(process.cwd(), options.testFolder, "config", capabilitiesName),
+        isSauceLab: options.sauceLab
+    }
+    return config;
+})();
+
+export const {
+
+    loglevel,
+    capabilities,
+
+    runType,
+    isSauceLab
+} = config;
 
 export const verbose = process.env.npm_config_loglevel === "verbose";
 export const testFolder = process.env.npm_config_testFolder || "e2e";
 export const mochaCustomOptions = process.env.npm_config_mochaOptions;
-export const capabilitiesName = "appium.capabilities.json";
 export const appLocation = process.env.npm_config_appLocation;
 export const executionPath = process.env.npm_config_executionPath;
+
+//Init final config files instead const that are used.
+export const configs = {};
 
 export function resolve(mainPath, ...args) {
     if (!path.isAbsolute(mainPath)) {
